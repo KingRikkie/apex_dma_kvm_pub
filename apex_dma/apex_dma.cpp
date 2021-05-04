@@ -31,9 +31,6 @@ bool item_glow = true;
 bool firing_range = false;
 bool target_allies = false;
 bool aim_no_recoil = false;
-bool aiming = false;			// true = aimbot aiming, false = aimbot currently resting
-int smooth = 30;
-int bone = 3;
 bool walls = false;
 
 bool actions_t = false;
@@ -395,10 +392,8 @@ static void init()
 							apex_found = true;
 							fprintf(out, "\nApex found %lx:\t%s\n", i.proc.pid, i.proc.name);
 							fprintf(out, "\tBase:\t%lx\tMagic:\t%hx (valid: %hhx)\n", peb.ImageBaseAddress, magic, (char)(magic == IMAGE_DOS_SIGNATURE));
-							//std::thread aimbot(AimbotLoop, std::ref(i));
 							std::thread actions(DoActions, std::ref(i));
 							std::thread itemglow(item_glow_t, std::ref(i));
-							//aimbot.detach();
 							actions.detach();
 							itemglow.detach();
 						}
