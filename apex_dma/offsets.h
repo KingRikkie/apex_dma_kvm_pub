@@ -12,8 +12,8 @@
     #define OFFSET_TEAM					0x448 //0x450 //m_iTeamNum
     #define OFFSET_HEALTH				0x438 //0x440 //m_iHealth
     #define OFFSET_SHIELD				0x170 //OUTDATED? m_shieldHealth
-    #define OFFSET_NAME					0x589 //OUTDATED? m_iName
-    #define OFFSET_SIGN_NAME			0x580 //OUTDATED? m_iSignifierName
+    #define OFFSET_NAME					0x589 //m_iName
+    #define OFFSET_SIGN_NAME			0x580 //m_iSignifierName
     #define OFFSET_ABS_VELOCITY         0x140 //OUTDATED? m_vecAbsVelocity
     #define OFFSET_VISIBLE_TIME         0x1ACC //0x1A4C
     #define OFFSET_ZOOMING      		0x1BE1 //0x1b41 //m_bZooming
@@ -25,7 +25,7 @@
     #define OFFSET_BONES				0xF38 //OUTDATED? m_bConstrainBetweenEndpoints
     #define OFFSET_AIMPUNCH				0x2430 //0x2390 //m_currentFrameLocalPlayer.m_vecPunchWeapon_Angle
     #define OFFSET_CAMERAPOS			0x1ED0 //0x1e30
-    #define OFFSET_VIEWANGLES			0x248c - 0x14 //OUTDATED? m_ammoPoolCapacity - 0x14
+    #define OFFSET_VIEWANGLES			0x2518 //0x248c - 0x14 m_ammoPoolCapacity - 0x14
     #define OFFSET_BREATH_ANGLES		OFFSET_VIEWANGLES - 0x10 //OUTDATED?
     #define OFFSET_OBSERVER_MODE		0x334C //0x32a4 //m_iObserverMode
     #define OFFSET_OBSERVING_TARGET		0x3350 //0x32a8 //m_hObserverTarget
@@ -75,7 +75,7 @@
     #define OFFSET_BONES				0xF38 //m_bConstrainBetweenEndpoints
     #define OFFSET_AIMPUNCH				0x2430 //m_currentFrameLocalPlayer.m_vecPunchWeapon_Angle
     #define OFFSET_CAMERAPOS			0x1ED0
-    #define OFFSET_VIEWANGLES			0x248c - 0x14 //m_ammoPoolCapacity - 0x14
+    #define OFFSET_VIEWANGLES			0x2518 //m_ammoPoolCapacity - 0x14
     #define OFFSET_BREATH_ANGLES		OFFSET_VIEWANGLES - 0x10
     #define OFFSET_OBSERVER_MODE		0x334C //m_iObserverMode
     #define OFFSET_OBSERVING_TARGET		0x3350 //m_hObserverTarget
