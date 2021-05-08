@@ -53,6 +53,8 @@
     #define GLOW_COLOR                  0x1D0 //OUTDATED? Script_CopyHighlightState 15th mov
     #define GLOW_FADE                   0x388 //OUTDATED? Script_Highlight_GetCurrentInsideOpacity 3rd result of 3 offsets consecutive or first + 8    
 
+    #define OFFSET_IS_ATTACKING         0x040C1B90 + 0x8 // kbutton_t in_attack state
+    #define OFFSET_AMMO_IN_CLIP         0x16C4 // m_ammoInClip
 #elif VERSION == ORIGIN
 
     #define OFFSET_ENTITYLIST			0x18eda78
