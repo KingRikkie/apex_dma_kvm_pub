@@ -23,7 +23,7 @@ uintptr_t aimentity = 0;
 uintptr_t tmp_aimentity = 0;
 uintptr_t lastaimentity = 0;
 float max = 999.0f;
-float max_dist = 300.0f*40.0f;	// ESP & Glow distance in meters (*40)
+float max_dist = 325.0f*40.0f;	// Glow distance in meters (*40)
 int localTeamId = 0;
 int tmp_spec = 0, spectators = 0;
 int tmp_all_spec = 0, allied_spectators = 0;
@@ -31,7 +31,7 @@ float max_fov = 3.0f;
 int toRead = 100;
 int aim = 0; 					// 0 = off, 1 = on - no visibility check, 2 = on - use visibility check
 int player_glow = 2;			// 0 = off, 1 = on - not visible through walls, 2 = on - visible through walls 
-float recoil_control = 0.45f;	// recoil reduction by this value, 1 = 100% = no recoil
+float recoil_control = 0.5f;	// recoil reduction by this value, 1 = 100% = no recoil
 Vector last_sway = Vector();	// used to determine when to reduce recoil
 bool item_glow = true;
 bool firing_range = false;
@@ -131,7 +131,7 @@ void SetPlayerGlow(WinProcess& mem, Entity& LPlayer, Entity& Target, int index)
 				}
 			}
 		}
-		else if((player_glow == 0) && Target.isGlowing())
+		else if ((player_glow == 0) && Target.isGlowing())
 		{
 			Target.disableGlow(mem);
 		}
@@ -144,17 +144,6 @@ void ProcessPlayer(WinProcess& mem, Entity& LPlayer, Entity& target, uint64_t en
 	bool obs = target.Observing(mem, entitylist);
 	if (obs)
 	{
-		/*if(obs == LPlayer.ptr)
-		{
-			if (entity_team == localTeamId)
-			{
-				tmp_all_spec++;
-			}
-			else
-			{
-				tmp_spec++;
-			}
-		}*/
 		tmp_spec++;
 		return;
 	}
@@ -164,21 +153,19 @@ void ProcessPlayer(WinProcess& mem, Entity& LPlayer, Entity& target, uint64_t en
 	if (dist > max_dist)
 	{
 		if (target.isGlowing())
-		{
 			target.disableGlow(mem);
-		}
 		return;
 	}
 
 	if (!target.isAlive()) return;
 
-	if (!firing_range && (entity_team < 0 || entity_team>50)) return;
+	if (!firing_range && (entity_team < 0 || entity_team > 50)) return;
 	
 	if (entity_team == localTeamId) return;
 
-	if(aim == 2)
+	if (aim == 2)
 	{
-		if((target.lastVisTime() > lastvis_aim[index]))
+		if ((target.lastVisTime() > lastvis_aim[index]))
 		{
 			float fov = CalculateFov(LPlayer, target);
 			if (fov < max)
@@ -189,10 +176,8 @@ void ProcessPlayer(WinProcess& mem, Entity& LPlayer, Entity& target, uint64_t en
 		}
 		else
 		{
-			if(aimentity==target.ptr)
-			{
-				aimentity=tmp_aimentity=lastaimentity=0;
-			}
+			if (aimentity == target.ptr)
+				aimentity = tmp_aimentity = lastaimentity = 0;
 		}
 	}
 	else
@@ -216,7 +201,7 @@ void DoActions(WinProcess& mem)
 	while (actions_t)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		while (g_Base!=0)
+		while (g_Base != 0)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(30));
 			uint64_t LocalPlayer = mem.Read<uint64_t>(g_Base + OFFSET_LOCAL_ENT);
@@ -226,16 +211,12 @@ void DoActions(WinProcess& mem)
 
 			localTeamId = LPlayer.getTeamId();
 			if (localTeamId < 0 || localTeamId > 50)
-			{
 				continue;
-			}
 			uint64_t entitylist = g_Base + OFFSET_ENTITYLIST;
 
 			uint64_t baseent = mem.Read<uint64_t>(entitylist);
 			if (baseent == 0)
-			{
 				continue;
-			}
 
 			max = 999.0f;
 			tmp_spec = 0;
@@ -252,9 +233,7 @@ void DoActions(WinProcess& mem)
 
 					Entity Target = getEntity(mem, centity);
 					if (!Target.isDummy())
-					{
 						continue;
-					}
 
 					ProcessPlayer(mem, LPlayer, Target, entitylist, c);
 					c++;
@@ -270,15 +249,11 @@ void DoActions(WinProcess& mem)
 
 					Entity Target = getEntity(mem, centity);
 					if (!Target.isPlayer())
-					{
 						continue;
-					}
 					
 					int entity_team = Target.getTeamId();
 					if (entity_team == localTeamId)
-					{
 						continue;
-					}
 
 					ProcessPlayer(mem, LPlayer, Target, entitylist, i);
 				}
@@ -305,7 +280,7 @@ static void item_glow_t(WinProcess& mem)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		int k = 0;
-		while (g_Base!=0)
+		while (g_Base != 0)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			uint64_t entitylist = g_Base + OFFSET_ENTITYLIST;
@@ -319,9 +294,7 @@ static void item_glow_t(WinProcess& mem)
 					Item item = getItem(mem, centity);
 
 					if(item.isItem() && !item.isGlowing())
-					{
 						item.enableGlow(mem);
-					}
 				}
 				k = 1;
 				std::this_thread::sleep_for(std::chrono::milliseconds(600));
@@ -338,9 +311,7 @@ static void item_glow_t(WinProcess& mem)
 						Item item = getItem(mem, centity);
 
 						if(item.isItem() && item.isGlowing())
-						{
 							item.disableGlow(mem);
-						}
 					}
 					k = 0;
 				}
@@ -371,21 +342,20 @@ static void RecoilLoop(WinProcess& mem)
 			}
 
 			Entity LPlayer = getEntity(mem, LocalPlayer);
-			Vector ViewAngles = LPlayer.GetViewAngles();
 			Vector SwayAngles = LPlayer.GetSwayAngles();
+			Vector ViewAngles = LPlayer.GetViewAngles();
 
 			// calculate recoil angles
 			Vector recoilAngles = SwayAngles - ViewAngles;
-			Vector compensatedAngles = ViewAngles;
 			if (recoilAngles.x == 0 || recoilAngles.y == 0 || (recoilAngles.x - last_sway.x) == 0 || (recoilAngles.y - last_sway.y) == 0) 
 				continue;
 				
 			// reduce recoil angles by last recoil as sway is continous
-			compensatedAngles.x -= ((recoilAngles.x - last_sway.x) * recoil_control);
-			compensatedAngles.y -= ((recoilAngles.y - last_sway.y) * recoil_control);
-			last_sway = recoilAngles;
+			ViewAngles.x -= ((recoilAngles.x - last_sway.x) * recoil_control);
+			ViewAngles.y -= ((recoilAngles.y - last_sway.y) * recoil_control);
 			
-			LPlayer.SetViewAngles(mem, compensatedAngles);
+			LPlayer.SetViewAngles(mem, ViewAngles);
+			last_sway = recoilAngles;
 		}
 	}
 	recoil_t = false;
@@ -416,16 +386,16 @@ static void DebugLoop(WinProcess& mem)
 
 			Entity LPlayer = getEntity(mem, LocalPlayer);
 
+			int attackState = mem.Read<int>(g_Base + OFFSET_IS_ATTACKING);
+			Vector LocalCamera = LPlayer.GetCamPos();
+			Vector ViewAngles = LPlayer.GetViewAngles();
+			Vector SwayAngles = LPlayer.GetSwayAngles();
+
 			uint64_t wephandle = mem.Read<uint64_t>(LocalPlayer + OFFSET_WEAPON);
 			wephandle &= 0xffff;
 			uint64_t entitylist = g_Base + OFFSET_ENTITYLIST;
 			uint64_t wep_entity = mem.Read<uint64_t>(entitylist + (wephandle << 5));
 			int ammoInClip = mem.Read<int>(wep_entity + OFFSET_AMMO_IN_CLIP);
-
-			int attackState = mem.Read<int>(g_Base + OFFSET_IS_ATTACKING);
-			Vector LocalCamera = LPlayer.GetCamPos();
-			Vector ViewAngles = LPlayer.GetViewAngles();
-			Vector SwayAngles = LPlayer.GetSwayAngles();
 
 			printToPipe("Attack State:\t" + std::to_string(attackState) + "\n", true);
 			printToPipe("Local Camera:\t" + std::to_string(LocalCamera.x) + "." + std::to_string(LocalCamera.y) + "." + std::to_string(LocalCamera.z) + "\n");
@@ -495,14 +465,14 @@ static void init()
 							fprintf(out, "\tBase:\t%lx\tMagic:\t%hx (valid: %hhx)\n", peb.ImageBaseAddress, magic, (char)(magic == IMAGE_DOS_SIGNATURE));
 							std::thread actions(DoActions, std::ref(i));
 							std::thread itemglow(item_glow_t, std::ref(i));
-							//std::thread recoil(RecoilLoop, std::ref(i));
+							std::thread recoil(RecoilLoop, std::ref(i));
 							if (DEBUG_PRINT) {
 								std::thread debug(DebugLoop, std::ref(i));
 								debug.detach();
 							}
 							actions.detach();
 							itemglow.detach();
-							//recoil.detach();								
+							recoil.detach();								
 						}
 					}
 				}
