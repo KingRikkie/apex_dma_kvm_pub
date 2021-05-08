@@ -16,6 +16,8 @@
 
 FILE* dfile;
 
+bool DEBUG_PRINT = false;
+
 bool active = true;
 uintptr_t aimentity = 0;
 uintptr_t tmp_aimentity = 0;
@@ -463,9 +465,11 @@ static void init()
 		bool apex_found = false;
 
 		// start external terminal and open pipe to print to it
-		// system("gnome-terminal -- cat /tmp/myfifo");
-		// mkfifo(printPipe, 0666);
-		// shellOut = open(printPipe, O_WRONLY);
+		if (DEBUG_PRINT) {
+			system("gnome-terminal -- cat /tmp/myfifo");
+			mkfifo(printPipe, 0666);
+			shellOut = open(printPipe, O_WRONLY);
+		}
 		
 		while (active)
 		{
@@ -491,12 +495,14 @@ static void init()
 							fprintf(out, "\tBase:\t%lx\tMagic:\t%hx (valid: %hhx)\n", peb.ImageBaseAddress, magic, (char)(magic == IMAGE_DOS_SIGNATURE));
 							std::thread actions(DoActions, std::ref(i));
 							std::thread itemglow(item_glow_t, std::ref(i));
-							std::thread recoil(RecoilLoop, std::ref(i));
-							//std::thread debug(DebugLoop, std::ref(i));
+							//std::thread recoil(RecoilLoop, std::ref(i));
+							if (DEBUG_PRINT) {
+								std::thread debug(DebugLoop, std::ref(i));
+								debug.detach();
+							}
 							actions.detach();
 							itemglow.detach();
-							recoil.detach();
-							//debug.detach();
+							//recoil.detach();								
 						}
 					}
 				}
