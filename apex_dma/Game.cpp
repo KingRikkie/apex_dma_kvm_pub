@@ -4,14 +4,6 @@ float maxVerticalDistFromBone = 10.0f;
 
 bool Entity::Observing(WinProcess& mem, uint64_t entitylist)
 {
-	/*uint64_t index = *(uint64_t*)(buffer + OFFSET_OBSERVING_TARGET);
-	index &= ENT_ENTRY_MASK;
-	if (index > 0)
-	{
-		uint64_t centity2 = mem.Read<uint64_t>(entitylist + ((uint64_t)index << 5));
-		return centity2;
-	}
-	return 0;*/
 	return *(bool*)(buffer + OFFSET_OBSERVER_MODE);
 }
 
@@ -85,11 +77,6 @@ Vector Entity::GetSwayAngles()
 }
 
 Vector Entity::GetViewAngles()
-{
-	return *(Vector*)(buffer + OFFSET_VIEWANGLES);
-}
-
-Vector Entity::GetViewAnglesV()
 {
 	return *(Vector*)(buffer + OFFSET_VIEWANGLES);
 }

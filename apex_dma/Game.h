@@ -52,7 +52,6 @@ public:
 	Vector GetViewAngles();
 	Vector GetCamPos();
 	Vector GetRecoil();
-	Vector GetViewAnglesV();
 
 	void enableGlow(WinProcess& mem, GColor color);
 	void disableGlow(WinProcess& mem);

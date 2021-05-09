@@ -25,8 +25,6 @@ uintptr_t lastaimentity = 0;
 float max = 999.0f;
 float max_dist = 325.0f*40.0f;	// Glow distance in meters (*40)
 int localTeamId = 0;
-int tmp_spec = 0, spectators = 0;
-int tmp_all_spec = 0, allied_spectators = 0;
 float max_fov = 3.0f;
 int toRead = 100;
 int aim = 0; 					// 0 = off, 1 = on - no visibility check, 2 = on - use visibility check
@@ -35,6 +33,10 @@ float recoil_control = 0.5f;	// recoil reduction by this value, 1 = 100% = no re
 Vector last_sway = Vector();	// used to determine when to reduce recoil
 bool item_glow = true;
 bool firing_range = false;
+bool aim_no_recoil = false;
+bool aiming = false;
+int smooth = 80;
+int bone = 3;
 
 bool actions_t = false;
 bool aim_t = false;
@@ -141,12 +143,6 @@ void SetPlayerGlow(WinProcess& mem, Entity& LPlayer, Entity& Target, int index)
 void ProcessPlayer(WinProcess& mem, Entity& LPlayer, Entity& target, uint64_t entitylist, int index)
 {
 	int entity_team = target.getTeamId();
-	bool obs = target.Observing(mem, entitylist);
-	if (obs)
-	{
-		tmp_spec++;
-		return;
-	}
 	Vector EntityPosition = target.getPosition();
 	Vector LocalPlayerPosition = LPlayer.getPosition();
 	float dist = LocalPlayerPosition.DistTo(EntityPosition);
@@ -163,36 +159,36 @@ void ProcessPlayer(WinProcess& mem, Entity& LPlayer, Entity& target, uint64_t en
 	
 	if (entity_team == localTeamId) return;
 
-	if (aim == 2)
-	{
-		if ((target.lastVisTime() > lastvis_aim[index]))
-		{
-			float fov = CalculateFov(LPlayer, target);
-			if (fov < max)
-			{
-				max = fov;
-				tmp_aimentity = target.ptr;
-			}
-		}
-		else
-		{
-			if (aimentity == target.ptr)
-				aimentity = tmp_aimentity = lastaimentity = 0;
-		}
-	}
-	else
-	{
-		float fov = CalculateFov(LPlayer, target);
-		if (fov < max)
-		{
-			max = fov;
-			tmp_aimentity = target.ptr;
-		}
-	}
+	// if (aim == 2)
+	// {
+	// 	if ((target.lastVisTime() > lastvis_aim[index]))
+	// 	{
+	// 		float fov = CalculateFov(LPlayer, target);
+	// 		if (fov < max)
+	// 		{
+	// 			max = fov;
+	// 			tmp_aimentity = target.ptr;
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		if (aimentity == target.ptr)
+	// 			aimentity = tmp_aimentity = lastaimentity = 0;
+	// 	}
+	// }
+	// else
+	// {
+	// 	float fov = CalculateFov(LPlayer, target);
+	// 	if (fov < max)
+	// 	{
+	// 		max = fov;
+	// 		tmp_aimentity = target.ptr;
+	// 	}
+	// }
 
 	SetPlayerGlow(mem, LPlayer, target, index);
 
-	lastvis_aim[index] = target.lastVisTime();
+	//lastvis_aim[index] = target.lastVisTime();
 }
 
 void DoActions(WinProcess& mem)
@@ -219,12 +215,9 @@ void DoActions(WinProcess& mem)
 				continue;
 
 			max = 999.0f;
-			tmp_spec = 0;
-			tmp_all_spec = 0;
-			tmp_aimentity = 0;
 			if (firing_range)
 			{
-				int c=0;
+				int c = 0;
 				for (int i = 0; i < 10000; i++)
 				{
 					uint64_t centity = mem.Read<uint64_t>(entitylist + ((uint64_t)i << 5));
@@ -258,12 +251,10 @@ void DoActions(WinProcess& mem)
 					ProcessPlayer(mem, LPlayer, Target, entitylist, i);
 				}
 			}
-			spectators = tmp_spec;
-			allied_spectators = tmp_all_spec;
-			if (!lock)
-				aimentity = tmp_aimentity;
-			else
-				aimentity = lastaimentity;
+			// if (!lock)
+			// 	aimentity = tmp_aimentity;
+			// else
+			// 	aimentity = lastaimentity;
 		}
 	}
 	actions_t = false;
@@ -272,6 +263,55 @@ void DoActions(WinProcess& mem)
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 player players[100];
+
+// static void AimbotLoop(WinProcess& mem)
+// {
+// 	aim_t = true;
+// 	while (aim_t)
+// 	{
+// 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+// 		while (g_Base != 0)
+// 		{
+// 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+// 			if (aim > 0)
+// 			{
+// 				if (aimentity == 0 || !aiming)
+// 				{
+// 					lock = false;
+// 					lastaimentity = 0;
+// 					continue;
+// 				}
+// 				lock = true;
+// 				lastaimentity = aimentity;
+// 				uint64_t LocalPlayer = mem.Read<uint64_t>(g_Base + OFFSET_LOCAL_ENT);
+// 				if (LocalPlayer == 0) continue;
+// 				Entity LPlayer = getEntity(mem, LocalPlayer);
+// 				Entity target = getEntity(mem, aimentity);
+
+// 				if (firing_range)
+// 				{
+// 					if (!target.isAlive())
+// 						continue;
+// 				}
+// 				else
+// 				{
+// 					if (!target.isAlive() || target.isKnocked())
+// 						continue;
+// 				}
+
+// 				Vector Angles = CalculateBestBoneAim(mem, LPlayer, target, max_fov, bone, smooth, aim_no_recoil);
+// 				if (Angles.x == 0 && Angles.y == 0)
+// 				{
+// 					lock = false;
+// 					lastaimentity = 0;
+// 					continue;
+// 				}
+// 				LPlayer.SetViewAngles(mem, Angles);
+// 			}
+// 		}
+// 	}
+// 	aim_t = false;
+// }
 
 static void item_glow_t(WinProcess& mem)
 {
@@ -329,7 +369,7 @@ static void RecoilLoop(WinProcess& mem)
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		while (g_Base != 0)  
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(15));
 			uint64_t LocalPlayer = mem.Read<uint64_t>(g_Base + OFFSET_LOCAL_ENT);
 			if (LocalPlayer == 0) continue;
 			int attackState = mem.Read<int>(g_Base + OFFSET_IS_ATTACKING);
@@ -347,7 +387,8 @@ static void RecoilLoop(WinProcess& mem)
 
 			// calculate recoil angles
 			Vector recoilAngles = SwayAngles - ViewAngles;
-			if (recoilAngles.x == 0 || recoilAngles.y == 0 || (recoilAngles.x - last_sway.x) == 0 || (recoilAngles.y - last_sway.y) == 0) 
+			//if (recoilAngles.x == 0 || recoilAngles.y == 0 || (recoilAngles.x - last_sway.x) == 0 || (recoilAngles.y - last_sway.y) == 0) 
+			if (recoilAngles.x == 0 || recoilAngles.y == 0 || (recoilAngles.x - last_sway.x) == 0) 
 				continue;
 				
 			// reduce recoil angles by last recoil as sway is continous
@@ -496,14 +537,14 @@ static void init()
 					}
 				}
 
-				if(!apex_found)
+				if (!apex_found)
 				{
 					g_Base = 0;
 					active = false;
 				}
 				else
 				{
-					if(!apex_found)
+					if (!apex_found)
 					{
 						g_Base = 0;
 					}
