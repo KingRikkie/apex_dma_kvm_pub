@@ -189,7 +189,7 @@ void ProcessPlayer(WinProcess& mem, Entity& LPlayer, Entity& target, uint64_t en
 
 	SetPlayerGlow(mem, LPlayer, target, index);
 
-	//lastvis_aim[index] = target.lastVisTime();
+	lastvis_aim[index] = target.lastVisTime();
 }
 
 void DoActions(WinProcess& mem)
