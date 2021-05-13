@@ -7,7 +7,7 @@
 
     #define OFFSET_ENTITYLIST			0x18eda78
     #define OFFSET_LOCAL_ENT			0x1c9d198 //LocalPlayer
-    #define OFFSET_NAME_LIST            0x81af4c0
+    #define OFFSET_NAME_LIST            0x81AF540
 
     #define OFFSET_TEAM					0x448 //m_iTeamNum
     #define OFFSET_HEALTH				0x438 //m_iHealth
@@ -31,7 +31,7 @@
     #define OFFSET_OBSERVING_TARGET		0x3350 //m_hObserverTarget
 
     #define OFFSET_MATRIX				0x1b3bd0
-    #define OFFSET_RENDER				0x40BF2E8
+    #define OFFSET_RENDER				0x40BF368
 
     #define OFFSET_WEAPON				0x1a6c //m_latestPrimaryWeapons
     #define OFFSET_BULLET_SPEED         0x1ED0
@@ -53,13 +53,13 @@
     #define GLOW_COLOR                  0x1D0 //OUTDATED? Script_CopyHighlightState 15th mov
     #define GLOW_FADE                   0x388 //OUTDATED? Script_Highlight_GetCurrentInsideOpacity 3rd result of 3 offsets consecutive or first + 8    
 
-    #define OFFSET_IS_ATTACKING         0x040C1B90 + 0x8 // kbutton_t in_attack state
+    #define OFFSET_IS_ATTACKING         0x040C1C10 + 0x8 // kbutton_t in_attack state
     #define OFFSET_AMMO_IN_CLIP         0x16C4 // m_ammoInClip
 #elif VERSION == ORIGIN
 
     #define OFFSET_ENTITYLIST			0x18eda78
     #define OFFSET_LOCAL_ENT			0x1c9d198 //LocalPlayer
-    #define OFFSET_NAME_LIST            0x81af4c0
+    #define OFFSET_NAME_LIST            0x81AF540
 
     #define OFFSET_TEAM					0x448 //m_iTeamNum
     #define OFFSET_HEALTH				0x438 //m_iHealth

@@ -29,9 +29,9 @@ float max_fov = 3.0f;
 int toRead = 100;
 int aim = 0; 					// 0 = off, 1 = on - no visibility check, 2 = on - use visibility check
 int player_glow = 2;			// 0 = off, 1 = on - not visible through walls, 2 = on - visible through walls 
-float recoil_control = 0.5f;	// recoil reduction by this value, 1 = 100% = no recoil
+float recoil_control = 0.45f;	// recoil reduction by this value, 1 = 100% = no recoil
 Vector last_sway = Vector();	// used to determine when to reduce recoil
-int last_sway_counter = 0;		// to determine if we might be shooting a semi out rifle so we need to hold to last_sway
+int last_sway_counter = 0;		// to determine if we might be shooting a semi-auto rifle so we need to hold to last_sway
 bool item_glow = true;
 bool firing_range = false;
 bool aim_no_recoil = false;
@@ -392,14 +392,21 @@ static void RecoilLoop(WinProcess& mem)
 
 			// calculate recoil angles
 			Vector recoilAngles = SwayAngles - ViewAngles;
-			//if (recoilAngles.x == 0 || recoilAngles.y == 0 || (recoilAngles.x - last_sway.x) == 0 || (recoilAngles.y - last_sway.y) == 0) 
 			if (recoilAngles.x == 0 || recoilAngles.y == 0 || (recoilAngles.x - last_sway.x) == 0) 
 				continue;
-				
+
+			// fix jumping Y-sign
+			if (recoilAngles.y <= -180)	recoilAngles.y += 360;
+			else if (recoilAngles.y >= 180)	recoilAngles.y -= 360;
+			
 			// reduce recoil angles by last recoil as sway is continous
 			ViewAngles.x -= ((recoilAngles.x - last_sway.x) * recoil_control);
 			ViewAngles.y -= ((recoilAngles.y - last_sway.y) * recoil_control);
-			
+
+			// sanity check 
+			if (ViewAngles.y <= -180) ViewAngles.y += 360;
+			else if (ViewAngles.y >= 180) ViewAngles.y -= 360;
+
 			LPlayer.SetViewAngles(mem, ViewAngles);
 			last_sway = recoilAngles;
 			last_sway_counter = 0;
@@ -434,7 +441,7 @@ static void DebugLoop(WinProcess& mem)
 			Entity LPlayer = getEntity(mem, LocalPlayer);
 
 			int attackState = mem.Read<int>(g_Base + OFFSET_IS_ATTACKING);
-			Vector LocalCamera = LPlayer.GetCamPos();
+			//Vector LocalCamera = LPlayer.GetCamPos();
 			Vector ViewAngles = LPlayer.GetViewAngles();
 			Vector SwayAngles = LPlayer.GetSwayAngles();
 
@@ -442,12 +449,15 @@ static void DebugLoop(WinProcess& mem)
 			wephandle &= 0xffff;
 			uint64_t entitylist = g_Base + OFFSET_ENTITYLIST;
 			uint64_t wep_entity = mem.Read<uint64_t>(entitylist + (wephandle << 5));
-			int ammoInClip = mem.Read<int>(wep_entity + OFFSET_AMMO_IN_CLIP);
+			int ammoInClip = 0;
+			if (wep_entity > 0) {
+				ammoInClip = mem.Read<int>(wep_entity + OFFSET_AMMO_IN_CLIP);
+			}
 
 			printToPipe("Attack State:\t" + std::to_string(attackState) + "\n", true);
-			printToPipe("Local Camera:\t" + std::to_string(LocalCamera.x) + "." + std::to_string(LocalCamera.y) + "." + std::to_string(LocalCamera.z) + "\n");
-			printToPipe("View Angles: \t" + std::to_string(ViewAngles.x) + "." + std::to_string(ViewAngles.y) + "." + std::to_string(ViewAngles.z) + "\n");
-			printToPipe("Sway Angles: \t" + std::to_string(SwayAngles.x) + "." + std::to_string(SwayAngles.y) + "." + std::to_string(SwayAngles.z) + "\n");
+			//printToPipe("Local Camera:\t" + std::to_string(LocalCamera.x) + " " + std::to_string(LocalCamera.y) + " " + std::to_string(LocalCamera.z) + "\n");
+			printToPipe("View Angles: \t" + std::to_string(ViewAngles.x) + " " + std::to_string(ViewAngles.y) + " " + std::to_string(ViewAngles.z) + "\n");
+			printToPipe("Sway Angles: \t" + std::to_string(SwayAngles.x) + " " + std::to_string(SwayAngles.y) + " " + std::to_string(SwayAngles.z) + "\n");
 			printToPipe("Ammo Count:  \t" + std::to_string(ammoInClip)  + "\n");
 		}
 	}
